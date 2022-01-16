@@ -34,22 +34,25 @@ main > .road {
     position: absolute;
     box-shadow: 0 0 0 1px #fff,
                 0 0 0 var(--road-width) #2A2922,
-                0 0 0 calc(var(--road-width) + 2px) yellow,
+                0 0 0 calc(var(--road-width) + 2px) var(--amber),
                 0 0 0 calc(var(--road-width) + 20px) #2A2922;
     z-index: 0;
+    filter: drop-shadow(0 0 var(--light-intensity) #2A2922);
 }
 
 
 #info-panel {
     padding: 1rem;
     margin: 1rem;
-    border: solid white 2px;
+    border: solid rgba(0,0,0,.2) 2px;
     position: absolute;
+    background: rgba(0,0,0,.6);
     display: flex;
     flex-direction: column;
     top: 0;
     left: 0;
     font-size: 1rem;
+    z-index: 99;
 }
 
 #info-panel > div {
