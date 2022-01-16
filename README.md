@@ -1,3 +1,16 @@
+## How to run (TL;DR)
+
+1. Clone the repository
+2. From the repository:
+   1. Run `npm i`
+   2. Run `npm run build`
+   3. Run `dotnet run`
+
+
+## Introduction
+
+## Developer Notes
+
 ## Requirements
 In this test we would like you to implement a traffic light system. We are required to have 4 sets of lights, as follows. 
 
