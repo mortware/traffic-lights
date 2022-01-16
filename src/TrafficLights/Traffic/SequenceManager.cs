@@ -18,11 +18,11 @@ public class SequenceManager : ISequenceManager
         DefaultSequence = BuildSequence(_trafficLightSettings.DefaultSequence);
         PeakSequence = BuildSequence(_trafficLightSettings.PeakSequence);
     }
-    
+
     public TrafficLightFlow GetNextFlow(TimeSpan currentTime)
     {
         _logger.LogInformation($"Fetching next flow...");
-        
+
         CurrentSequence = IsPeakTime(currentTime)
             ? PeakSequence
             : DefaultSequence;
@@ -31,7 +31,7 @@ public class SequenceManager : ISequenceManager
         CurrentSequence.Enqueue(flow);
         return flow;
     }
-    
+
     public bool IsPeakTime(TimeSpan currentTime)
     {
         var peakTimes = _trafficLightSettings.PeakTimes.Values;
@@ -47,28 +47,29 @@ public class SequenceManager : ISequenceManager
             {
                 throw new ArgumentException($"Duration '{sequenceSetting.DurationName}' does not exist in settings.");
             }
-            
+
             var duration = _trafficLightSettings.Durations[sequenceSetting.DurationName];
 
             var state = new TrafficLightFlow(duration, sequenceSetting.Name)
             {
-                NorthToSouthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.NorthToSouthActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.NorthToSouthActive)],
-                SouthToNorthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.SouthToNorthActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.SouthToNorthActive)],
-                SouthToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.SouthToEastActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.SouthToEastActive)],
-                EastToWestActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.EastToWestActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.EastToWestActive)],
-                WestToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.WestToEastActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.WestToEastActive)],
+                NorthToSouthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.NorthToSouthActive)) &&
+                                     sequenceSetting.ActiveLights[nameof(TrafficLightFlow.NorthToSouthActive)],
+
+                SouthToNorthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.SouthToNorthActive)) &&
+                                     sequenceSetting.ActiveLights[nameof(TrafficLightFlow.SouthToNorthActive)],
+                
+                SouthToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.SouthToEastActive)) &&
+                                    sequenceSetting.ActiveLights[nameof(TrafficLightFlow.SouthToEastActive)],
+                
+                EastToWestActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.EastToWestActive)) &&
+                                   sequenceSetting.ActiveLights[nameof(TrafficLightFlow.EastToWestActive)],
+                
+                WestToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.WestToEastActive)) &&
+                                   sequenceSetting.ActiveLights[nameof(TrafficLightFlow.WestToEastActive)],
             };
             sequence.Enqueue(state);
         }
+
         return sequence;
     }
-}
-
-public interface ISequenceManager
-{
-    Queue<TrafficLightFlow> DefaultSequence { get; }
-    Queue<TrafficLightFlow> PeakSequence { get; }
-    Queue<TrafficLightFlow> CurrentSequence { get; }
-    TrafficLightFlow GetNextFlow(TimeSpan currentTime);
-    bool IsPeakTime(TimeSpan currentTime);
 }

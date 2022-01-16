@@ -1,11 +1,5 @@
 import "./css/main.css";
 import * as signalR from "@microsoft/signalr";
-import {stat} from "fs";
-
-const divMessages: HTMLDivElement = document.querySelector("#divMessages");
-const tbMessage: HTMLInputElement = document.querySelector("#tbMessage");
-const btnSend: HTMLButtonElement = document.querySelector("#btnSend");
-const username = new Date().getTime();
 
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("/hub")
@@ -34,6 +28,14 @@ let updateTrafficLight = (key: string, status: string): void => {
     let pips = document.querySelectorAll(`div#light_${key} > .pip`);
     pips.forEach(p => p.classList.remove('on'));
 
-    let onPip = document.querySelector(`div#light_${key} > .pip.${status}`);
-    onPip.classList.add('on');
+    let pipToActivate = document.querySelector(`div#light_${key} > .pip.${status}`);
+    pipToActivate.classList.add('on');
 }
+
+// Debug
+let updateClock = () => {
+    let now = new Date();
+    document.getElementById('debugLocalTime').innerHTML = now.toTimeString();
+    setTimeout(updateClock,100);
+}
+updateClock();

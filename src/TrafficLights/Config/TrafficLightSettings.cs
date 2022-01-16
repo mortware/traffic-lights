@@ -23,7 +23,7 @@ public class TrafficLightSettings
     public IEnumerable<SequenceSetting> PeakSequence { get; set; }
     
     /// <summary>
-    /// Default duration settings
+    /// Default duration settings in milliseconds
     /// </summary>
     public Dictionary<string, int> Durations { get; set; }
 }

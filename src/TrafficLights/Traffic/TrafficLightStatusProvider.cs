@@ -26,20 +26,20 @@ public sealed class TrafficLightStatusProvider
         };
     }
 
-    private static State GetState(bool isCurrentlyActive, bool isNextActive, bool isTransitioning)
+    private static TrafficLightState GetState(bool isCurrentlyActive, bool isNextActive, bool isTransitioning)
     {
         if (!isTransitioning)
         {
             return isCurrentlyActive
-                ? State.Green
-                : State.Red;
+                ? TrafficLightState.Green
+                : TrafficLightState.Red;
         }
 
         return isCurrentlyActive switch
         {
-            true when isNextActive => State.Green,
-            true when !isNextActive => State.Amber,
-            _ => State.Red
+            true when isNextActive => TrafficLightState.Green,
+            true when !isNextActive => TrafficLightState.Amber,
+            _ => TrafficLightState.Red
         };
     }
 }
