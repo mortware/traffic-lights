@@ -5,22 +5,23 @@ namespace TrafficLights.Traffic;
 
 public class SequenceManager : ISequenceManager
 {
+    private readonly ILogger<SequenceManager> _logger;
     private readonly TrafficLightSettings _trafficLightSettings;
     public Queue<TrafficLightState> DefaultSequence { get; }
     public Queue<TrafficLightState> PeakSequence { get; }
     public Queue<TrafficLightState> CurrentSequence { get; private set; }
 
-    public SequenceManager(IOptions<TrafficLightSettings> trafficLightSettings)
+    public SequenceManager(ILogger<SequenceManager> logger, IOptions<TrafficLightSettings> trafficLightSettings)
     {
+        _logger = logger;
         _trafficLightSettings = trafficLightSettings.Value;
-
         DefaultSequence = BuildSequence(_trafficLightSettings.DefaultSequence);
         PeakSequence = BuildSequence(_trafficLightSettings.PeakSequence);
     }
     
     public TrafficLightState GetNextFlow(TimeSpan currentTime)
     {
-        Console.WriteLine($"Fetching next flow...");
+        _logger.LogInformation($"Fetching next flow...");
         
         CurrentSequence = IsPeakTime(currentTime)
             ? PeakSequence

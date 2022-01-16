@@ -8,6 +8,7 @@ namespace TrafficLights.Traffic;
 
 public class Worker : BackgroundService
 {
+    private readonly ILogger<Worker> _logger;
     private readonly IHubContext<TrafficHub, ITraffic> _hubContext;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ISequenceManager _sequenceManager;
@@ -18,8 +19,9 @@ public class Worker : BackgroundService
     private int _tickDelay = 1000;
     private TrafficLightState _currentState;
 
-    public Worker(IHubContext<TrafficHub, ITraffic> hubContextContext, IDateTimeProvider dateTimeProvider, ISequenceManager sequenceManager, IOptions<TrafficLightSettings> trafficLightSettings)
+    public Worker(ILogger<Worker> logger, IHubContext<TrafficHub, ITraffic> hubContextContext, IDateTimeProvider dateTimeProvider, ISequenceManager sequenceManager, IOptions<TrafficLightSettings> trafficLightSettings)
     {
+        _logger = logger;
         _hubContext = hubContextContext;
         _dateTimeProvider = dateTimeProvider;
         _sequenceManager = sequenceManager;
@@ -41,13 +43,13 @@ public class Worker : BackgroundService
     {
         if (!_isTransitioning && _elapsedSeconds >= _currentState.Duration - _defaultWarningDuration)
         {
-            Console.WriteLine($"Switching from {_currentState.Name} to {_sequenceManager.CurrentSequence.Peek().Name}");
+            _logger.LogInformation($"Switching from {_currentState.Name} to {_sequenceManager.CurrentSequence.Peek().Name}");
             _isTransitioning = true;
         }
         else if (_elapsedSeconds >= _currentState.Duration)
         {
             _currentState = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
-            Console.WriteLine($"Switched to {_currentState.Name}");
+            _logger.LogInformation($"Switched to {_currentState.Name}");
             _isTransitioning = false;
             _elapsedSeconds = 0;
         }
