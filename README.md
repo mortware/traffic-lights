@@ -1,10 +1,14 @@
 ## How to run (TL;DR)
 
 1. Clone the repository
-2. From the repository folder:
-   1. Run `npm i`
-   2. Run `npm run build`
-   3. Run `dotnet run`
+2. Change to the `src/TrafficLight` folder
+3. Run the following commands:
+   ```
+   npm i
+   npm run release
+   dotnet run
+   ```
+4. Watch a boring traffic light simulator in your browser
 
 Note: Depending on what time of day you run this app, you'll either get the Normal/Default sequence, or the Peak one. See [requirements](#requirements) for details
 
@@ -16,6 +20,8 @@ This repo is my coding exercise submission for a new position. It demonstrates a
 2. SignalR
 3. TypeScript
 4. CSS/HTML
+
+![Screenshot](screenshot.png)
 
 There are a number of self-imposed challenges I decided to set myself. I did this because either it was an area of weakness in my knowledge, I hadn't done it in a while, or simply because I like pain 😜. These challenges included:
 1. Don't use any images. All styling to be done using HTML/CSS
