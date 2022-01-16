@@ -8,7 +8,7 @@
    npm run release
    dotnet run
    ```
-4. Watch a boring traffic light simulator in your browser
+4. Open your browser to https://localhost:7127 or http://localhost:5022 and watch a boring traffic light simulator
 
 Note: Depending on what time of day you run this app, you'll either get the Normal/Default sequence, or the Peak one. See [requirements](#requirements) for details
 

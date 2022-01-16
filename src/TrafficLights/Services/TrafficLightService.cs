@@ -37,7 +37,7 @@ public class TrafficLightService : BackgroundService
         _defaultWarningDuration = trafficLightSettings.Value.DefaultDurations["DefaultWarningDuration"];
         _delay = trafficLightSettings.Value.TickDelay;
         _timer = new Stopwatch();
-        _currentFlow = new TrafficLightFlow(int.MaxValue, "Rest");
+        _currentFlow = new TrafficLightFlow(int.MaxValue, "No-one is going anywhere");
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
