@@ -11,9 +11,9 @@ const connection = new signalR.HubConnectionBuilder()
     .withUrl("/hub")
     .build();
 
-connection.on("showTime", (time: string) => {
+connection.on("showTime", (time: string, schedule: string) => {
     let timeElement = document.getElementById("currentTime");
-    timeElement.innerHTML = time;
+    timeElement.innerHTML = time + ` (${schedule})`;
 })
 
 connection.on("setLight", (key: string, status: string) => {

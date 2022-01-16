@@ -1,6 +1,6 @@
 ﻿namespace TrafficLights.Traffic;
 
-public class TrafficLightStatus
+public sealed class TrafficLightStatusProvider
 {
     public Light SouthToNorth { get; } = new(1, "s_n");
 
@@ -11,10 +11,12 @@ public class TrafficLightStatus
     public Light WestToEast { get; } = new(4, "w_e");
 
     public Light SouthToEast { get; } = new(5, "s_e");
+    
+    public IEnumerable<Light> All => new[] { NorthToSouth, SouthToNorth, EastToWest, WestToEast, SouthToEast };
 
-    public static TrafficLightStatus Build(TrafficLightState current, TrafficLightState next, bool isTransitioning)
+    public static TrafficLightStatusProvider Build(TrafficLightState current, TrafficLightState next, bool isTransitioning)
     {
-        return new TrafficLightStatus
+        return new TrafficLightStatusProvider
         {
             NorthToSouth = { State = GetState(current.NorthToSouthActive, next.NorthToSouthActive, isTransitioning) },
             SouthToNorth = { State = GetState(current.SouthToNorthActive, next.SouthToNorthActive, isTransitioning) },
@@ -40,6 +42,4 @@ public class TrafficLightStatus
             _ => State.Red
         };
     }
-
-    public IEnumerable<Light> All => new[] { NorthToSouth, SouthToNorth, EastToWest, WestToEast, SouthToEast };
 }

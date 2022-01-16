@@ -1,107 +1,69 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
+using TrafficLights.Config;
 using TrafficLights.Hubs;
+using TrafficLights.Providers;
 
 namespace TrafficLights.Traffic;
 
 public class Worker : BackgroundService
 {
     private readonly IHubContext<TrafficHub, ITraffic> _hubContext;
-    private readonly DateTime _startTime;
-
-    private PeakTime[] PeakTimes = new[]
-    {
-        new PeakTime { Start = TimeSpan.FromHours(8), Duration = TimeSpan.FromHours(2) },
-        new PeakTime { Start = TimeSpan.FromHours(17), Duration = TimeSpan.FromHours(2) },
-    };
-
-    private const int DefaultActiveDuration = 5; //20
-    private const int DefaultAltDuration = 2; // 4
-    private const int DefaultRestDuration = 2; // 4
-    private const int DefaultWarningDuration = 2; // 4
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ISequenceManager _sequenceManager;
+    
     private int _elapsedSeconds = 0;
     private bool _isTransitioning = false;
+    private readonly int _defaultWarningDuration;
+    private int _tickDelay = 1000;
+    private TrafficLightState _currentState;
 
-    private TrafficLightState _currentFlow;
-
-
-    private readonly Queue<TrafficLightState> _sequence = new();
-
-    public Worker(IHubContext<TrafficHub, ITraffic> hubContextContext)
+    public Worker(IHubContext<TrafficHub, ITraffic> hubContextContext, IDateTimeProvider dateTimeProvider, ISequenceManager sequenceManager, IOptions<TrafficLightSettings> trafficLightSettings)
     {
         _hubContext = hubContextContext;
-        _startTime = DateTime.UtcNow;
-
-        // Order of traffic flow
-        _sequence.Enqueue(new TrafficLightState("North <-> South") { SouthToNorthActive = true, NorthToSouthActive = true });
-        _sequence.Enqueue(new TrafficLightState("South -> North + East") { SouthToNorthActive = true, SouthToEastActive = true });
-        _sequence.Enqueue(new TrafficLightState("East <-> West") { EastToWestActive = true, WestToEastActive = true });
-
-        MoveToNextFlow();
+        _dateTimeProvider = dateTimeProvider;
+        _sequenceManager = sequenceManager;
+        _defaultWarningDuration = trafficLightSettings.Value.Durations["DefaultWarningDuration"];
+        _tickDelay = trafficLightSettings.Value.TickDelay;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        _currentState = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
         while (!cancellationToken.IsCancellationRequested)
         {
+            await _hubContext.Clients.All.ShowTime(_dateTimeProvider.Now.TimeOfDay, _sequenceManager.IsPeakTime(_dateTimeProvider.Now.TimeOfDay) ? "Peak" : "Normal");
             await DoLoop(cancellationToken);
         }
     }
 
     private async Task DoLoop(CancellationToken cancellationToken)
     {
-        await _hubContext.Clients.All.ShowTime(DateTime.UtcNow.TimeOfDay);
-
-        Console.WriteLine(_elapsedSeconds);
-
-        if (!_isTransitioning && _elapsedSeconds >= DefaultActiveDuration - DefaultWarningDuration)
+        if (!_isTransitioning && _elapsedSeconds >= _currentState.Duration - _defaultWarningDuration)
         {
-            Console.WriteLine($"Switching from {_currentFlow.Name} to {_sequence.Peek().Name}");
+            Console.WriteLine($"Switching from {_currentState.Name} to {_sequenceManager.CurrentSequence.Peek().Name}");
             _isTransitioning = true;
         }
-        else if (_elapsedSeconds >= DefaultActiveDuration)
+        else if (_elapsedSeconds >= _currentState.Duration)
         {
-            MoveToNextFlow();
-            Console.WriteLine($"Switched to {_currentFlow.Name}");
+            _currentState = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
+            Console.WriteLine($"Switched to {_currentState.Name}");
             _isTransitioning = false;
             _elapsedSeconds = 0;
         }
-
+        var status = TrafficLightStatusProvider.Build(_currentState, _sequenceManager.CurrentSequence.Peek(), _isTransitioning);
+        await UpdateLights(status);
+        
         _elapsedSeconds++;
+        await Task.Delay(_tickDelay, cancellationToken);
+    }
 
-        var status = TrafficLightStatus.Build(_currentFlow, _sequence.Peek(), _isTransitioning);
-
-        foreach (var light in status.All)
+    private async Task UpdateLights(TrafficLightStatusProvider statusProvider)
+    {
+        foreach (var light in statusProvider.All)
         {
             await _hubContext.Clients.All.SetLight(light.Key, light.State.ToString().ToLower());
         }
-
-        await Task.Delay(1000, cancellationToken);
-    }
-
-    private void MoveToNextFlow()
-    {
-        _currentFlow = _sequence.Dequeue();
-        _sequence.Enqueue(_currentFlow);
     }
 }
 
-public class PeakTime
-{
-    public TimeSpan Start { get; set; }
-    public TimeSpan Duration { get; set; }
-}
-
-public class TrafficLightState
-{
-    public string Name { get; init; }
-    public bool SouthToNorthActive { get; init; }
-    public bool NorthToSouthActive { get; init; }
-    public bool SouthToEastActive { get; init; }
-    public bool EastToWestActive { get; init; }
-    public bool WestToEastActive { get; init; }
-
-    public TrafficLightState(string name)
-    {
-        Name = name;
-    }
-}

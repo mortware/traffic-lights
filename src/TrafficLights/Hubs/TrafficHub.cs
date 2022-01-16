@@ -10,7 +10,7 @@ namespace TrafficLights.Hubs
 
     public interface ITraffic
     {
-        Task ShowTime(TimeSpan currentTime);
+        Task ShowTime(TimeSpan currentTime, string schedule);
 
         Task SetLight(string key, string state);
     }
