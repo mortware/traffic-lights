@@ -1,4 +1,4 @@
-﻿namespace TrafficLights.Traffic;
+﻿namespace TrafficLights.Models;
 
 public enum TrafficLightState
 {

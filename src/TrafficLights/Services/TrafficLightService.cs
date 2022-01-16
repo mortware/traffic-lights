@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using TrafficLights.Config;
 using TrafficLights.Hubs;
+using TrafficLights.Models;
 using TrafficLights.Providers;
-using TrafficLights.Traffic;
 
 namespace TrafficLights.Services;
 
@@ -13,12 +13,12 @@ public class TrafficLightService : BackgroundService
     private readonly ILogger<TrafficLightService> _logger;
     private readonly IHubContext<TrafficHub, ITraffic> _hubContext;
     private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly ISequenceManager _sequenceManager;
+    private readonly ISequenceService _sequenceService;
     
     private readonly Stopwatch _timer;
     private readonly int _delay;
-    private int _elapsed = 0;
-    private bool _isTransitioning = false;
+    private int _elapsed;
+    private bool _isTransitioning;
 
     private readonly int _defaultWarningDuration;
     private TrafficLightFlow _currentFlow;
@@ -27,16 +27,17 @@ public class TrafficLightService : BackgroundService
         ILogger<TrafficLightService> logger, 
         IHubContext<TrafficHub, ITraffic> hubContextContext, 
         IDateTimeProvider dateTimeProvider, 
-        ISequenceManager sequenceManager, 
+        ISequenceService sequenceService, 
         IOptions<TrafficLightSettings> trafficLightSettings)
     {
         _logger = logger;
         _hubContext = hubContextContext;
         _dateTimeProvider = dateTimeProvider;
-        _sequenceManager = sequenceManager;
-        _defaultWarningDuration = trafficLightSettings.Value.Durations["DefaultWarningDuration"];
+        _sequenceService = sequenceService;
+        _defaultWarningDuration = trafficLightSettings.Value.DefaultDurations["DefaultWarningDuration"];
         _delay = trafficLightSettings.Value.TickDelay;
         _timer = new Stopwatch();
+        _currentFlow = new TrafficLightFlow(int.MaxValue, "Rest");
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -51,7 +52,7 @@ public class TrafficLightService : BackgroundService
                 _timer.Start();    
             }
             
-            await _hubContext.Clients.All.UpdateTime(_dateTimeProvider.Now.TimeOfDay, _sequenceManager.IsPeakTime(_dateTimeProvider.Now.TimeOfDay) ? "Peak" : "Normal");
+            await _hubContext.Clients.All.UpdateTime(_dateTimeProvider.Now.TimeOfDay, _sequenceService.IsPeakTime(_dateTimeProvider.Now.TimeOfDay) ? "Peak" : "Normal");
             await DoLoop(cancellationToken);
         }
     }
@@ -62,7 +63,7 @@ public class TrafficLightService : BackgroundService
         
         if (!_isTransitioning && _elapsed >= _currentFlow.Duration - _defaultWarningDuration)
         {
-            _logger.LogDebug($"Switching from {_currentFlow.Name} to {_sequenceManager.CurrentSequence.Peek().Name}");
+            _logger.LogDebug($"Switching from {_currentFlow.Name} to {_sequenceService.CurrentSequence.Peek().Name}");
             _isTransitioning = true;
         }
         else if (_elapsed >= _currentFlow.Duration)
@@ -72,7 +73,7 @@ public class TrafficLightService : BackgroundService
             _timer.Restart();
             _elapsed = 0;
         }
-        var status = TrafficLightStatusProvider.Build(_currentFlow, _sequenceManager.CurrentSequence.Peek(), _isTransitioning);
+        var status = TrafficLightStatusProvider.Build(_currentFlow, _sequenceService.CurrentSequence.Peek(), _isTransitioning);
         await UpdateLights(status);
         
         _elapsed = Convert.ToInt32(_timer.ElapsedMilliseconds);
@@ -89,8 +90,8 @@ public class TrafficLightService : BackgroundService
 
     private async Task UpdateFlow()
     {
-        _currentFlow = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
-        await _hubContext.Clients.All.UpdateCurrentFlowInfo(_currentFlow.Name, _sequenceManager.CurrentSequence.Peek().Name);
+        _currentFlow = _sequenceService.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
+        await _hubContext.Clients.All.UpdateCurrentFlowInfo(_currentFlow.Name, _sequenceService.CurrentSequence.Peek().Name);
         
         _logger.LogInformation($"Current flow: '{_currentFlow.Name}'");
     }

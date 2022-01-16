@@ -2,6 +2,6 @@
 
 public class PeakTimeSetting
 {
-    public TimeSpan Start { get; set; }
-    public TimeSpan Duration { get; set; }
+    public TimeSpan Start { get; init; }
+    public TimeSpan Duration { get; init; }
 }

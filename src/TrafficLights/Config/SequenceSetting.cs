@@ -2,8 +2,8 @@
 
 public class SequenceSetting
 {
-    public int Order { get; set; }
-    public string Name { get; set; }
-    public string DurationName { get; set; }
-    public Dictionary<string, bool> ActiveLights { get; set; } = new();
+    public int Order { get; init; } = int.MinValue;
+    public string Name { get; init; } = string.Empty;
+    public string DurationName { get; init; } = string.Empty;
+    public IDictionary<string, bool> ActiveLights { get; init; } = new Dictionary<string, bool>();
 }

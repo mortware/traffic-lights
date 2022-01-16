@@ -1,10 +1,10 @@
-﻿namespace TrafficLights.Traffic;
+﻿namespace TrafficLights.Models;
 
 public class TrafficLightFlow
 {
-    public string Name { get; init; }
+    public string Name { get; }
 
-    public int Duration { get; set; }
+    public int Duration { get; }
     
     public bool SouthToNorthActive { get; init; }
     

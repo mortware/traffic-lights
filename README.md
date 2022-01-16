@@ -1,15 +1,38 @@
 ## How to run (TL;DR)
 
 1. Clone the repository
-2. From the repository:
+2. From the repository folder:
    1. Run `npm i`
    2. Run `npm run build`
    3. Run `dotnet run`
 
+Note: Depending on what time of day you run this app, you'll either get the Normal/Default sequence, or the Peak one. See [requirements](#requirements) for details
 
 ## Introduction
 
+This repo is my coding exercise submission for a new position. It demonstrates a working knowledge of a number of different technologies and patterns, namely:
+
+1. .NET 6
+2. SignalR
+3. TypeScript
+4. CSS/HTML
+
+There are a number of self-imposed challenges I decided to set myself. I did this because either it was an area of weakness in my knowledge, I hadn't done it in a while, or simply because I like pain 😜. These challenges included:
+1. Don't use any images. All styling to be done using HTML/CSS
+2. SignalR will be the back-bone of the application. I could have opted for simply calling an API to get the current state, but SignalR is awesome.
+3. Multiple browsers can connect to the same back-end, and get exactly the same result in realtime.
+4. A configurable tick-delay, in order to manage responsive vs performance
+5. ALWAYS complete the bonus challenge! 😎
+
 ## Developer Notes
+
+Given more time, I would have liked to implement the following:
+
+1. A method for setting the current time. This would make live testing a lot easier, but from minor investigations, it seems you can't stop/start a BackgroundService once the application is running. Perhaps I could have make the worker respond to a change in time.
+2. Configuration documentation. I might create a short wiki.
+3. In the UK, when lights are about to turn from red to green, the amber light is shown as well as the red. It wasn't clear in the requirements whether I should do this, so I decided to leave it out. It should be fairly simple to implement by adding a new `RedAmber` state, and making changes to `TrafficLightStatusProvider.GetState`. There would also need to be some minor front-end changes, as it only can only keep one light on at any given time.
+4. I considered using `Three.js` for the front-end, as this is something I'm keen to learn - but time and relevance didn't allow.
+5. Due to the nature of combining a web app with SignalR, I'm not overly keen on the file/folder structure. I'd like to refactor and split it out.
 
 ## Requirements
 In this test we would like you to implement a traffic light system. We are required to have 4 sets of lights, as follows. 

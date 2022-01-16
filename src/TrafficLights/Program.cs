@@ -2,7 +2,6 @@ using TrafficLights.Config;
 using TrafficLights.Hubs;
 using TrafficLights.Providers;
 using TrafficLights.Services;
-using TrafficLights.Traffic;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
@@ -11,7 +10,7 @@ builder.Services.AddHostedService<TrafficLightService>();
 builder.Services.Configure<TrafficLightSettings>(builder.Configuration.GetSection("TrafficLightSettings"));
 
 builder.Services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
-builder.Services.AddSingleton<ISequenceManager, SequenceManager>();
+builder.Services.AddSingleton<ISequenceService, SequenceService>();
 
 var app = builder.Build();
 app.UseRouting();

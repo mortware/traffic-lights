@@ -1,16 +1,18 @@
-﻿namespace TrafficLights.Traffic;
+﻿using TrafficLights.Models;
+
+namespace TrafficLights.Providers;
 
 public sealed class TrafficLightStatusProvider
 {
-    public Light SouthToNorth { get; } = new(1, "s_n");
+    private Light SouthToNorth { get; } = new("s_n");
 
-    public Light EastToWest { get; } = new(2, "e_w");
+    private Light EastToWest { get; } = new("e_w");
 
-    public Light NorthToSouth { get; } = new(3, "n_s");
+    private Light NorthToSouth { get; } = new("n_s");
 
-    public Light WestToEast { get; } = new(4, "w_e");
+    private Light WestToEast { get; } = new("w_e");
 
-    public Light SouthToEast { get; } = new(5, "s_e");
+    private Light SouthToEast { get; } = new("s_e");
     
     public IEnumerable<Light> All => new[] { NorthToSouth, SouthToNorth, EastToWest, WestToEast, SouthToEast };
 
@@ -22,7 +24,7 @@ public sealed class TrafficLightStatusProvider
             SouthToNorth = { State = GetState(current.SouthToNorthActive, next.SouthToNorthActive, isTransitioning) },
             EastToWest = { State = GetState(current.WestToEastActive, next.WestToEastActive, isTransitioning) },
             WestToEast = { State = GetState(current.EastToWestActive, next.EastToWestActive, isTransitioning) },
-            SouthToEast = { State = GetState(current.SouthToEastActive, next.SouthToEastActive, isTransitioning) },
+            SouthToEast = { State = GetState(current.SouthToEastActive, next.SouthToEastActive, isTransitioning) }
         };
     }
 
