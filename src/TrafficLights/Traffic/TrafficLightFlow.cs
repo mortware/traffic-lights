@@ -1,6 +1,6 @@
 ﻿namespace TrafficLights.Traffic;
 
-public class TrafficLightState
+public class TrafficLightFlow
 {
     public string Name { get; init; }
 
@@ -16,7 +16,7 @@ public class TrafficLightState
     
     public bool WestToEastActive { get; init; }
 
-    public TrafficLightState(int duration, string name)
+    public TrafficLightFlow(int duration, string name)
     {
         Duration = duration;
         Name = name;

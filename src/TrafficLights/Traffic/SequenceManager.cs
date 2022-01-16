@@ -7,9 +7,9 @@ public class SequenceManager : ISequenceManager
 {
     private readonly ILogger<SequenceManager> _logger;
     private readonly TrafficLightSettings _trafficLightSettings;
-    public Queue<TrafficLightState> DefaultSequence { get; }
-    public Queue<TrafficLightState> PeakSequence { get; }
-    public Queue<TrafficLightState> CurrentSequence { get; private set; }
+    public Queue<TrafficLightFlow> DefaultSequence { get; }
+    public Queue<TrafficLightFlow> PeakSequence { get; }
+    public Queue<TrafficLightFlow> CurrentSequence { get; private set; }
 
     public SequenceManager(ILogger<SequenceManager> logger, IOptions<TrafficLightSettings> trafficLightSettings)
     {
@@ -19,7 +19,7 @@ public class SequenceManager : ISequenceManager
         PeakSequence = BuildSequence(_trafficLightSettings.PeakSequence);
     }
     
-    public TrafficLightState GetNextFlow(TimeSpan currentTime)
+    public TrafficLightFlow GetNextFlow(TimeSpan currentTime)
     {
         _logger.LogInformation($"Fetching next flow...");
         
@@ -38,9 +38,9 @@ public class SequenceManager : ISequenceManager
         return peakTimes.Any(p => currentTime >= p.Start && currentTime < p.Start.Add(p.Duration));
     }
 
-    private Queue<TrafficLightState> BuildSequence(IEnumerable<SequenceSetting> sequenceSettings)
+    private Queue<TrafficLightFlow> BuildSequence(IEnumerable<SequenceSetting> sequenceSettings)
     {
-        var sequence = new Queue<TrafficLightState>();
+        var sequence = new Queue<TrafficLightFlow>();
         foreach (var sequenceSetting in sequenceSettings.OrderBy(s => s.Order))
         {
             if (!_trafficLightSettings.Durations.ContainsKey(sequenceSetting.DurationName))
@@ -50,13 +50,13 @@ public class SequenceManager : ISequenceManager
             
             var duration = _trafficLightSettings.Durations[sequenceSetting.DurationName];
 
-            var state = new TrafficLightState(duration, sequenceSetting.Name)
+            var state = new TrafficLightFlow(duration, sequenceSetting.Name)
             {
-                NorthToSouthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightState.NorthToSouthActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightState.NorthToSouthActive)],
-                SouthToNorthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightState.SouthToNorthActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightState.SouthToNorthActive)],
-                SouthToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightState.SouthToEastActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightState.SouthToEastActive)],
-                EastToWestActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightState.EastToWestActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightState.EastToWestActive)],
-                WestToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightState.WestToEastActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightState.WestToEastActive)],
+                NorthToSouthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.NorthToSouthActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.NorthToSouthActive)],
+                SouthToNorthActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.SouthToNorthActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.SouthToNorthActive)],
+                SouthToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.SouthToEastActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.SouthToEastActive)],
+                EastToWestActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.EastToWestActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.EastToWestActive)],
+                WestToEastActive = sequenceSetting.ActiveLights.ContainsKey(nameof(TrafficLightFlow.WestToEastActive)) && sequenceSetting.ActiveLights[nameof(TrafficLightFlow.WestToEastActive)],
             };
             sequence.Enqueue(state);
         }
@@ -66,9 +66,9 @@ public class SequenceManager : ISequenceManager
 
 public interface ISequenceManager
 {
-    Queue<TrafficLightState> DefaultSequence { get; }
-    Queue<TrafficLightState> PeakSequence { get; }
-    Queue<TrafficLightState> CurrentSequence { get; }
-    TrafficLightState GetNextFlow(TimeSpan currentTime);
+    Queue<TrafficLightFlow> DefaultSequence { get; }
+    Queue<TrafficLightFlow> PeakSequence { get; }
+    Queue<TrafficLightFlow> CurrentSequence { get; }
+    TrafficLightFlow GetNextFlow(TimeSpan currentTime);
     bool IsPeakTime(TimeSpan currentTime);
 }

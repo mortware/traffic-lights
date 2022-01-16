@@ -17,7 +17,7 @@ public class Worker : BackgroundService
     private bool _isTransitioning = false;
     private readonly int _defaultWarningDuration;
     private int _tickDelay = 1000;
-    private TrafficLightState _currentState;
+    private TrafficLightFlow _currentFlow;
 
     public Worker(ILogger<Worker> logger, IHubContext<TrafficHub, ITraffic> hubContextContext, IDateTimeProvider dateTimeProvider, ISequenceManager sequenceManager, IOptions<TrafficLightSettings> trafficLightSettings)
     {
@@ -31,29 +31,29 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        _currentState = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
+        await UpdateFlow();
+        
         while (!cancellationToken.IsCancellationRequested)
         {
-            await _hubContext.Clients.All.ShowTime(_dateTimeProvider.Now.TimeOfDay, _sequenceManager.IsPeakTime(_dateTimeProvider.Now.TimeOfDay) ? "Peak" : "Normal");
+            await _hubContext.Clients.All.UpdateTime(_dateTimeProvider.Now.TimeOfDay, _sequenceManager.IsPeakTime(_dateTimeProvider.Now.TimeOfDay) ? "Peak" : "Normal");
             await DoLoop(cancellationToken);
         }
     }
 
     private async Task DoLoop(CancellationToken cancellationToken)
     {
-        if (!_isTransitioning && _elapsedSeconds >= _currentState.Duration - _defaultWarningDuration)
+        if (!_isTransitioning && _elapsedSeconds >= _currentFlow.Duration - _defaultWarningDuration)
         {
-            _logger.LogInformation($"Switching from {_currentState.Name} to {_sequenceManager.CurrentSequence.Peek().Name}");
+            _logger.LogDebug($"Switching from {_currentFlow.Name} to {_sequenceManager.CurrentSequence.Peek().Name}");
             _isTransitioning = true;
         }
-        else if (_elapsedSeconds >= _currentState.Duration)
+        else if (_elapsedSeconds >= _currentFlow.Duration)
         {
-            _currentState = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
-            _logger.LogInformation($"Switched to {_currentState.Name}");
+            await UpdateFlow();
             _isTransitioning = false;
             _elapsedSeconds = 0;
         }
-        var status = TrafficLightStatusProvider.Build(_currentState, _sequenceManager.CurrentSequence.Peek(), _isTransitioning);
+        var status = TrafficLightStatusProvider.Build(_currentFlow, _sequenceManager.CurrentSequence.Peek(), _isTransitioning);
         await UpdateLights(status);
         
         _elapsedSeconds++;
@@ -64,8 +64,16 @@ public class Worker : BackgroundService
     {
         foreach (var light in statusProvider.All)
         {
-            await _hubContext.Clients.All.SetLight(light.Key, light.State.ToString().ToLower());
+            await _hubContext.Clients.All.UpdateTrafficLight(light.Key, light.State.ToString().ToLower());
         }
+    }
+
+    private async Task UpdateFlow()
+    {
+        _currentFlow = _sequenceManager.GetNextFlow(_dateTimeProvider.Now.TimeOfDay);
+        await _hubContext.Clients.All.UpdateCurrentFlowInfo(_currentFlow.Name, _sequenceManager.CurrentSequence.Peek().Name);
+        
+        _logger.LogInformation($"Current flow: '{_currentFlow.Name}'");
     }
 }
 

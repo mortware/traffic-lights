@@ -14,7 +14,7 @@ public sealed class TrafficLightStatusProvider
     
     public IEnumerable<Light> All => new[] { NorthToSouth, SouthToNorth, EastToWest, WestToEast, SouthToEast };
 
-    public static TrafficLightStatusProvider Build(TrafficLightState current, TrafficLightState next, bool isTransitioning)
+    public static TrafficLightStatusProvider Build(TrafficLightFlow current, TrafficLightFlow next, bool isTransitioning)
     {
         return new TrafficLightStatusProvider
         {

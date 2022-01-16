@@ -11,14 +11,21 @@ const connection = new signalR.HubConnectionBuilder()
     .withUrl("/hub")
     .build();
 
-connection.on("showTime", (time: string, schedule: string) => {
+connection.on("updateTime", (time: string, schedule: string) => {
     let timeElement = document.getElementById("currentTime");
     timeElement.innerHTML = time + ` (${schedule})`;
 })
 
-connection.on("setLight", (key: string, status: string) => {
+connection.on("updateTrafficLight", (key: string, status: string) => {
     updateTrafficLight(key, status);
-    console.log(key, status)
+});
+
+connection.on("updateCurrentFlowInfo", (currentFlowName: string, nextFlowName: string) => {
+    let currentFlowNameElement = document.getElementById("currentFlowName");
+    currentFlowNameElement.innerHTML = currentFlowName;
+
+    let nextFlowNameElement = document.getElementById("nextFlowName");
+    nextFlowNameElement.innerHTML = nextFlowName;
 });
 
 connection.start().catch(err => document.write(err));
