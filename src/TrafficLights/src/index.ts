@@ -22,10 +22,10 @@ connection.on("updateTrafficLight", (key: string, status: string) => {
 
 connection.on("updateCurrentFlowInfo", (currentFlowName: string, nextFlowName: string) => {
     let currentFlowNameElement = document.getElementById("currentFlowName");
-    currentFlowNameElement.innerHTML = currentFlowName;
+    currentFlowNameElement.innerHTML = `Current: ${currentFlowName}`;
 
     let nextFlowNameElement = document.getElementById("nextFlowName");
-    nextFlowNameElement.innerHTML = nextFlowName;
+    nextFlowNameElement.innerHTML = `Next: ${nextFlowName}`;
 });
 
 connection.start().catch(err => document.write(err));

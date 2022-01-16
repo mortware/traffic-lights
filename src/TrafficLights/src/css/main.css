@@ -4,13 +4,15 @@
 
 :root {
     --pip-size: 1.2rem;
-    --light-offset-x: 105px;
+    --light-offset-x: 100px;
     --light-offset-y: 300px;
     --road-width: 100px;
     
     --red: #E60000;
     --green: #4CBB17;
     --amber: #FF7800;
+
+    --light-intensity: 8px;
 }
 
 html, body {
@@ -20,7 +22,7 @@ html, body {
 }
 
 main {
-    background: #7EC850;
+    background-image: radial-gradient(#89dd54, #5fa136);
     position: relative;
     display: flex;
     align-items: center;
@@ -30,19 +32,32 @@ main {
 
 main > .road {
     position: absolute;
-    box-shadow: 0 0 0 5px #fff,
-    0 0 0 var(--road-width) #2A2922;
+    box-shadow: 0 0 0 1px #fff,
+                0 0 0 var(--road-width) #2A2922,
+                0 0 0 calc(var(--road-width) + 2px) yellow,
+                0 0 0 calc(var(--road-width) + 20px) #2A2922;
     z-index: 0;
 }
 
 
 #info-panel {
+    padding: 1rem;
+    margin: 1rem;
+    border: solid white 2px;
     position: absolute;
     display: flex;
     flex-direction: column;
     top: 0;
     left: 0;
+    font-size: 2rem;
 }
+
+#info-panel > div {
+    color: white;
+    padding: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
 
 .road.ew {
     width: 100vw;
@@ -80,8 +95,8 @@ main > .road {
 }
 
 .light {
-    border: solid black 1px;
-    border-radius: 10px;
+    border: solid rgb(50,50,50) 2px;
+    border-radius: 20px;
     background: black;
     display: flex;
     flex-direction: column;
@@ -91,31 +106,42 @@ main > .road {
 .light > .pip {
     height: var(--pip-size);
     width: var(--pip-size);
-    margin: 0.2rem;
+    margin: 0.3rem;
     opacity: 0.05;
     transition: opacity 0.5s ease-in-out;
 }
 
 .light > div.pip {
     border-radius: 50%;
+    border: solid rgba(0,0,0,.5) 1px;
 }
 
 .light > .pip.red {
     background-color: var(--red);
+    filter: drop-shadow(0 0 var(--light-intensity) var(--red));
 }
 
 .light > .pip.amber {
     background-color: var(--amber);
+    filter: drop-shadow(0 0 var(--light-intensity) var(--amber));
 }
 
 .light > div.pip.green {
     background-color: var(--green);
+    filter: drop-shadow(0 0 var(--light-intensity) var(--green));
 }
 
 .light > svg.pip.green {
     fill: var(--green);
+    filter: drop-shadow(0 0 var(--light-intensity) var(--green));
 }
 
 .light > .pip.on {
     opacity: 1;
+}
+
+.test {
+    opacity: 1;
+    fill: var(--green);
+    filter: drop-shadow(0 0 20px var(--green));
 }
